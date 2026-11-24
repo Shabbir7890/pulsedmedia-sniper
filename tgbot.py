@@ -15,7 +15,7 @@ import requests
 
 from catalog import Catalog
 from runtime import ago, duration
-from targets import (Target, claimed_usernames, effective_username,
+from targets import (MIN_INTERVAL, Target, claimed_usernames, effective_username,
                      free_usernames, normalise_names, remaining_wanted,
                      username_conflict, username_shortfall)
 
@@ -159,7 +159,7 @@ HELP = [
     ("/cycle <pid> <months>", "change billing: 1 3 6 12 24 36"),
     ("/user <pid> <name...>", "set the username pool - one name per box"),
     ("/user <pid> + <name...>", "add more names without dropping the old ones"),
-    ("/speed [pid] <sec>", "how often to check (default 5s)"),
+    ("/speed [pid] <sec>", "how often to check (minimum 10s)"),
     ("/top <pid>", "check this one first each cycle"),
     ("/pause [pid]", "pause everything, or one target"),
     ("/resume [pid]", "resume"),
@@ -953,8 +953,8 @@ class TelegramBot(object):
                 lines.append("<code>%d</code> %s - every <b>%ds</b>"
                              % (t.pid, esc(t.name), t.every(self.cfg)))
             lines.append("")
-            lines.append("<code>/speed 5</code> for all, "
-                         "<code>/speed 355 3</code> for one.")
+            lines.append("<code>/speed 15</code> for all, "
+                         "<code>/speed 355 10</code> for one.")
             self.send("\n".join(lines))
             return
 
@@ -970,9 +970,9 @@ class TelegramBot(object):
                       "<code>/speed &lt;pid&gt; &lt;seconds&gt;</code>")
             return
 
-        if seconds < 2:
-            self.send("2 seconds is the floor. Below that the gain is noise and "
-                      "an IP block costs you the box you are waiting for.")
+        if seconds < MIN_INTERVAL:
+            self.send("%d seconds is the floor. Below that the gain is noise and "
+                      "an IP block costs you the box you are waiting for." % MIN_INTERVAL)
             return
         for t in targets:
             t.interval = seconds
@@ -981,9 +981,7 @@ class TelegramBot(object):
         self.rt.wake.set()
 
         per_day = int(86400 / seconds) * len(self.store.active())
-        warn = ("" if seconds >= 5 else
-                "\n\n⚠️ Under 5s is a lot of traffic for a small host. "
-                "Worth it only if you expect a drop right now.")
+        warn = ""
         self.send("Checking every <b>%ds</b> (%d target(s)).\n"
                   "Found within ~%ds of stock appearing; about %s requests a day.%s"
                   % (seconds, len(targets), seconds, "{:,}".format(per_day), warn))

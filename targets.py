@@ -12,6 +12,10 @@ import re
 import threading
 import time
 
+# Fastest allowed check interval. A public tool polled harder than this by many
+# users gets the whole thing blocked by a small host.
+MIN_INTERVAL = 10
+
 log = logging.getLogger("targets")
 
 # Fields the poller fills in; they are persisted so /status still says something
@@ -148,7 +152,7 @@ class Target(object):
 
     def every(self, cfg):
         """Seconds between checks for this target."""
-        return max(2, int(self.interval or cfg.POLL_SECONDS))
+        return max(MIN_INTERVAL, int(self.interval or cfg.POLL_SECONDS))
 
     def goal(self):
         if self.want is None:

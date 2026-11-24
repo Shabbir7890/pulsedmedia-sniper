@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Answer the two questions that need YOUR account to settle. Places no orders.
 
-    PM_COOKIE='WHMCSmNqPBCNDcH8d=...' python probe_auth.py
+    PM_COOKIE='WHMCSmNqPBCNDcH8d=...' python tools/probe_auth.py
 
 Reports:
   1. whether the cookie actually authenticates you
@@ -13,12 +13,14 @@ It briefly puts a cheap in-stock product in your cart to render a real logged-in
 checkout page, then empties the cart again. Nothing is ever purchased.
 """
 import logging
+import os
 import re
 import sys
 
 from bs4 import BeautifulSoup
 
-import config as cfg
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+import config as cfg  # noqa: E402
 from whmcs import OrderError, PulsedMedia
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)-7s %(name)s: %(message)s",

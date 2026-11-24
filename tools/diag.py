@@ -1,17 +1,19 @@
 #!/usr/bin/env python3
 """One-off diagnostic: what does THIS host see when it talks to Pulsed Media?
 
-Run on the bot's machine:  python diag.py
+Run on the bot's machine:  python tools/diag.py
 The printed public IP must match the IP of the browser the cookie came from.
 Prints no secrets beyond a short cookie fingerprint.
 """
+import os
 import re
 import sys
 
 import requests
 from bs4 import BeautifulSoup
 
-import config as cfg
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+import config as cfg  # noqa: E402
 from whmcs import PulsedMedia
 
 

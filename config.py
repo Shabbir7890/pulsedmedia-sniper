@@ -64,7 +64,7 @@ TARGET_TOTAL = _env("PM_TARGET_TOTAL", "1", cast=int)
 SKIP_OWNED_CHECK = _env("PM_SKIP_OWNED_CHECK", "false", cast=bool)
 
 # --- polling ----------------------------------------------------------------
-POLL_SECONDS = _env("PM_POLL_SECONDS", "20", cast=int)
+POLL_SECONDS = max(10, _env("PM_POLL_SECONDS", "20", cast=int))  # 10 s floor, see targets.MIN_INTERVAL
 JITTER_SECONDS = _env("PM_JITTER_SECONDS", "5", cast=int)
 MAX_BACKOFF = _env("PM_MAX_BACKOFF", "900", cast=int)
 TIMEOUT = _env("PM_TIMEOUT", "30", cast=int)

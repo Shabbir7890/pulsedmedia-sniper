@@ -617,7 +617,7 @@ class PulsedMedia:
         """How many services on the account match PRODUCT_NAME.
 
         This is the restart-safe guard: it is an absolute count read from the
-        account, so a dyno restart (which wipes the /tmp state file) cannot make
+        account, so a restart or a lost state file cannot make
         the bot lose track of what it has already bought. Returns None if the
         list could not be read, so callers can refuse to order rather than guess.
         """

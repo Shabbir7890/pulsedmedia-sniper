@@ -45,7 +45,8 @@ get a message when it orders.
 
 3. **Configure.** Copy `.env.example` to `.env` and fill in:
    - `PM_COOKIE`: your session cookie ([how to get it](#getting-your-session-cookie))
-   - `PM_USERNAME`: the username of a box you already own, or the name you want
+   - `PM_USERNAME`: the username of a box you already own, if any (it is never
+     reused). Usernames for **new** boxes are set per product in Telegram.
    - `TELEGRAM_BOT_TOKEN` and `TELEGRAM_CHAT_ID`
 
    Leave `PM_DRY_RUN=true` for now.
@@ -60,7 +61,7 @@ get a message when it orders.
 
    You want to see `Authenticated via PM_COOKIE` and a `Still watching` heartbeat.
 
-5. **Arm it.** Set `PM_DRY_RUN=false` in `.env` (or send `/arm` in Telegram), then
+5. **Arm it.** Set `PM_DRY_RUN=false` in `.env` (`/arm` in Telegram also works, but only until the bot restarts), then
    launch it in the background with `start.bat`. Use `/setup` in Telegram to
    choose what to buy.
 
@@ -191,7 +192,8 @@ order by accident.
 **It cannot order the wrong product.** Five separate checks, each covered by tests:
 
 1. At startup each product id is matched against the store catalogue by name; a
-   mismatch disables that target.
+   mismatch disables that target (for `PM_PID` / `PM_PRODUCT_NAME`, the bot
+   refuses to start).
 2. The cart is emptied at startup.
 3. Stock checks hit one product-specific URL, so only that product can be staged.
 4. The configure page must name the target product.
@@ -219,10 +221,12 @@ Set these in `.env`. Most day-to-day changes are easier from Telegram.
 | Variable | Default | Purpose |
 |---|---|---|
 | `PM_COOKIE` | none | **Required.** Session cookie |
-| `PM_USERNAME` | none | **Required.** Your existing box's username (always treated as taken) |
+| `PM_USERNAME` | none | Your existing box's username, if any (always treated as taken) |
 | `PM_DRY_RUN` | `true` | `false` to place real orders |
 | `PM_MODE` | `auto` | `order`, `cart` or `auto` (see below) |
 | `PM_PID` | `355` | Product id to watch on first run (after that, use `/watch`) |
+| `PM_PRODUCT_NAME` | `Eternal Väinämöinen - Seedbox 8TB R5 10G` | Must match `PM_PID`'s store name, or the bot will not start |
+| `PM_CATEGORY_URL` | Eternal Väinämöinen store page | Store category containing `PM_PID` |
 | `PM_TARGET_TOTAL` | `1` | First-run goal: how many matching services you want in total |
 | `PM_BILLING_CYCLE` | `monthly` | `monthly` … `triennially` |
 | `PM_MAX_TOTAL` | `0` | Abort if the total due exceeds this. `0` = no cap |
@@ -234,6 +238,9 @@ Set these in `.env`. Most day-to-day changes are easier from Telegram.
 | `PM_STOP_AFTER_ORDER` | `true` | Exit once every goal is met |
 | `PM_CUSTOMFIELDS` | `{}` | Explicit custom field ids, e.g. `{"587":"myname"}` |
 | `PM_SKIP_OWNED_CHECK` | `false` | Disable the owned-count guard (not recommended) |
+| `PM_PROMO` / `PM_NOTES` / `PM_PAYMENTMETHOD` | none | Promo code, order notes, payment method override |
+| `PM_HEARTBEAT_SECONDS` | `600` | How often the "still watching" log line appears |
+| `PM_MAX_BACKOFF` / `PM_TIMEOUT` | `900` / `30` | Error back-off cap and HTTP timeout, seconds |
 | `TELEGRAM_BOT_TOKEN` / `TELEGRAM_CHAT_ID` | none | Telegram control and alerts |
 
 ### Modes
@@ -297,7 +304,8 @@ To keep it alive on a PC or laptop:
 
 ```powershell
 .\uninstall.ps1 -DryRun       # show what would happen
-.\uninstall.ps1               # remove the watchdog task, stop the bot, undo power changes
+.\uninstall.ps1               # remove the watchdog task and stop the bot
+.\uninstall.ps1 -RestorePower # ...and reset ALL power settings to Windows defaults
 .\uninstall.ps1 -PurgeFiles   # ...and delete state files including session.json
 ```
 

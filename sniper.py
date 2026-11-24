@@ -9,7 +9,7 @@ One process, three parts:
   * a Telegram control thread (tgbot.py) that reports status and retargets the
     loop without touching the session.
 
-See README.md and CLAUDE.md.
+See README.md.
 """
 import json
 import logging
@@ -63,7 +63,7 @@ def acquire_single_instance():
     Two armed snipers is the worst failure this program has: they fight over
     Telegram (409 Conflict, so neither answers commands), interleave writes into
     one log, and can both pass the owned-count guard on the same drop and buy
-    twice. It happened on 2026-08-24 when the logon and the 10-minute watchdog
+    twice. This has happened in practice when the logon and the 10-minute watchdog
     triggers both fired within 24 seconds.
 
     A watchdog cannot be the guarantee here - it races. The lock is held by the
@@ -438,7 +438,7 @@ def main():
     # A dead session is no longer fatal: keep watching, keep answering /status,
     # and shout the moment stock appears so it can be bought by hand. WHMCS
     # binds sessions to an IP and they expire; exiting on that means silently
-    # missing the drop, which is exactly what happened on 2026-08-24.
+    # missing the drop, which is the one failure this bot exists to avoid.
     authed = check_session(pm, rt)
     if not authed and saved_cookie():
         # PM_COOKIE has expired, but a cookie sent through /cookie once worked.

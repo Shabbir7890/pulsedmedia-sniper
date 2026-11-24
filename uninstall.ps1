@@ -1,7 +1,8 @@
 # Undo everything the sniper set up on this machine.
 #
 #   .\uninstall.ps1 -DryRun     # show what would happen, change nothing
-#   .\uninstall.ps1             # stop it, remove the task, restore power settings
+#   .\uninstall.ps1             # stop it and remove the watchdog task
+#   .\uninstall.ps1 -RestorePower  # ...and reset ALL power schemes to Windows defaults
 #   .\uninstall.ps1 -PurgeFiles # ...and delete the state files, including the
 #                               #    saved WHMCS session cookie
 #
@@ -10,7 +11,7 @@
 param(
     [switch]$DryRun,
     [switch]$PurgeFiles,
-    [switch]$RestoreDefaultSchemes
+    [switch]$RestorePower
 )
 
 $root = Split-Path -Parent $MyInvocation.MyCommand.Path
@@ -57,36 +58,17 @@ if ($procs.Count -gt 0) {
 
 # 3. power settings
 #
-# Only ONE original value is known for certain: the AC sleep timeout was 4 hours
-# (0x3840) before the sniper changed it. The unattended-sleep and lid-close
-# originals were never captured - they are restored to the usual Windows
-# defaults below, which may not be what this machine had. Use
-# -RestoreDefaultSchemes for a guaranteed-correct reset of ALL power settings
-# (it also discards any unrelated tuning you have done).
+# The README asks you to turn sleep off by hand, and your original values were
+# never recorded, so the only safe reset is Windows' own defaults. Opt-in,
+# because it also discards any unrelated power tuning.
 Write-Host "Power settings"
-if ($RestoreDefaultSchemes) {
+if ($RestorePower) {
     Step "restore all power schemes to Windows defaults" {
         powercfg -restoredefaultschemes
         if ($LASTEXITCODE -ne 0) { throw "powercfg exited $LASTEXITCODE" }
     }
 } else {
-    Step "AC sleep timeout back to 4 hours" {
-        powercfg /change standby-timeout-ac 240
-        if ($LASTEXITCODE -ne 0) { throw "powercfg exited $LASTEXITCODE" }
-    }
-    Step "AC unattended sleep back to 2 minutes (assumed default)" {
-        powercfg /setacvalueindex SCHEME_CURRENT `
-            238c9fa8-0aad-41ed-83f4-97be242c8f20 7bc4a2f9-d8fc-4469-b07b-33eb785aaca0 120
-        powercfg /attributes 238c9fa8-0aad-41ed-83f4-97be242c8f20 `
-            7bc4a2f9-d8fc-4469-b07b-33eb785aaca0 +ATTRIB_HIDE
-    }
-    Step "lid close on AC back to sleep (assumed default)" {
-        powercfg /setacvalueindex SCHEME_CURRENT `
-            4f971e89-eebd-4455-a8de-9e59040e7347 5ca83367-6e45-459f-a27b-476b1d01c936 1
-        powercfg /attributes 4f971e89-eebd-4455-a8de-9e59040e7347 `
-            5ca83367-6e45-459f-a27b-476b1d01c936 +ATTRIB_HIDE
-    }
-    Step "apply the scheme" { powercfg /setactive SCHEME_CURRENT }
+    Write-Host "  SKIP   left as they are (use -RestorePower to reset to Windows defaults)" -ForegroundColor DarkGray
 }
 
 # 4. state files

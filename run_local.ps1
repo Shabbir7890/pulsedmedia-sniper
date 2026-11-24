@@ -15,7 +15,7 @@ if (-not (Test-Path $envFile)) {
 }
 
 # Load KEY=VALUE lines, ignoring blanks and # comments.
-Get-Content $envFile | ForEach-Object {
+Get-Content $envFile -Encoding UTF8 | ForEach-Object {
     $line = $_.Trim()
     if ($line -and -not $line.StartsWith('#') -and $line.Contains('=')) {
         $i = $line.IndexOf('=')

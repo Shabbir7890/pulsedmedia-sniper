@@ -28,9 +28,9 @@ if ($proc) {
 # Armed or not
 $dry = (Select-String -Path (Join-Path $root '.env') -Pattern '^PM_DRY_RUN=(.*)$' -ErrorAction SilentlyContinue).Matches.Groups[1].Value
 if ($dry -eq 'false') {
-    Write-Host ("  MODE     : ARMED - will place a real order") -ForegroundColor Yellow
+    Write-Host ("  MODE     : ARMED in .env - will place a real order") -ForegroundColor Yellow
 } else {
-    Write-Host ("  MODE     : DRY RUN - will NOT order") -ForegroundColor DarkGray
+    Write-Host ("  MODE     : DRY RUN in .env (/arm in Telegram overrides until restart)") -ForegroundColor DarkGray
 }
 
 $log = Join-Path $root 'sniper.log'

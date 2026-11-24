@@ -3,6 +3,13 @@
 Watches Pulsed Media products and orders them automatically from your account
 credit the moment they come back in stock. Controlled from Telegram.
 
+> **Needs a machine with a browser — not a headless server.** Login is
+> captcha-protected, so the bot runs on a session cookie from your browser, and
+> Pulsed Media only accepts that cookie from the IP it was created on. Run it on
+> your own Windows PC/laptop, or a Windows VPS you log in to over RDP. Cloud
+> workers, Docker, and headless Linux boxes will not work. See
+> [Where to run it](#where-to-run-it).
+
 > **Use at your own risk.** This is an unofficial tool, not affiliated with
 > Pulsed Media. It places real orders with real money when `PM_DRY_RUN=false`.
 > Keep polling intervals reasonable. MIT licensed; see `LICENSE`.
@@ -56,10 +63,12 @@ not going to work around it with a solving service. The supported path is that
 **you** authenticate as a human once in your browser, and the bot reuses that
 session:
 
-1. Log in to `pulsedmedia.com/clients` in your browser.
+1. Log in to `pulsedmedia.com/clients` in a browser **on the machine that runs
+   the bot** (same public IP — see [Where to run it](#where-to-run-it)).
 2. DevTools → Application → Cookies → `pulsedmedia.com`.
 3. Copy the value of the **`WHMCSmNqPBCNDcH8d`** cookie.
-4. `heroku config:set PM_COOKIE='WHMCSmNqPBCNDcH8d=<value>'`
+4. Put it in `.env` as `PM_COOKIE=WHMCSmNqPBCNDcH8d=<value>`, or send
+   `/cookie <value>` to the Telegram bot while it runs
    (a bare value works too — the cookie name is filled in from `PM_COOKIE_NAME`).
 
 The bot pings `clientarea.php` every 5 minutes (`PM_KEEPALIVE_SECONDS`), which
@@ -171,61 +180,51 @@ against a live product.
 
 ---
 
+## Where to run it
+
+WHMCS binds a session to the IP address that created it. A cookie copied from
+your browser is rejected from any other IP, so **the bot and the browser you log
+in with must share one public IP**. In practice that means:
+
+| Host | Works? |
+|---|---|
+| Your Windows PC or laptop, left on | **Yes** |
+| Windows VPS with a desktop, used over RDP (log in with its browser) | **Yes** |
+| Heroku, Railway, Render, Fly, other cloud workers | No — no browser, IP not yours |
+| Docker / headless Linux server | No — you cannot log in from its IP |
+
+Sessions also expire. When that happens the bot keeps watching and messages you;
+log in again in that same machine's browser and send `/cookie <value>`.
+
+The helper scripts (`start.bat`, `status.ps1`, `watchdog.py`, `uninstall.ps1`)
+are Windows-only.
+
 ## Setup order
 
-```bash
-pip install -r requirements.txt
+1. Install Python 3.11+ and run `pip install -r requirements.txt`.
+2. Copy `.env.example` to `.env` and fill in `PM_COOKIE` (from this machine's
+   browser), `PM_USERNAME`, and optionally `TELEGRAM_BOT_TOKEN` /
+   `TELEGRAM_CHAT_ID`. Keep `PM_DRY_RUN=true` for now.
+3. Check everything without ordering:
 
-# 1. No credentials, no orders — confirms the scraper still matches the site.
-python selftest.py
+   ```powershell
+   python selftest.py      # no credentials needed — scraper still matches the site
+   .un_local.ps1         # dry run: logs in, fills the cart if in stock, never buys
+   ```
 
-# 2. With your cookie — settles the logged-in-checkout captcha question
-#    and shows the custom fields. Places no orders.
-export PM_COOKIE='WHMCSmNqPBCNDcH8d=...'
-export PM_USERNAME='yourseedboxname'
-python probe_auth.py
-
-# 3. Dry run: logs in, and if stock exists fills the cart and stops.
-export PM_DRY_RUN=true
-python sniper.py
-```
-
-Set `PM_MODE` from what step 2 told you (currently: `order`), then arm with
-`PM_DRY_RUN=false`.
-
-## Deploy to Heroku
-
-```bash
-cd pulsed-sniper
-git init && git add -A && git commit -m "Pulsed Media stock sniper"
-
-heroku create your-app-name
-heroku config:set \
-  PM_COOKIE='WHMCSmNqPBCNDcH8d=...' \
-  PM_USERNAME='yourseedboxname' \
-  PM_MODE=auto \
-  PM_MAX_TOTAL=12 \
-  PM_DRY_RUN=true \
-  TELEGRAM_BOT_TOKEN='123:ABC' TELEGRAM_CHAT_ID='987654321'
-
-git push heroku main
-heroku ps:scale web=0 worker=1     # worker, not web — there is no HTTP endpoint
-heroku logs --tail
-```
-
-Confirm a clean `Authenticated via PM_COOKIE` and a `Still watching — 0 available`
-heartbeat, then `heroku config:set PM_DRY_RUN=false`.
+   Look for `Authenticated via PM_COOKIE` and a `Still watching — 0 available`
+   heartbeat.
+4. Set `PM_DRY_RUN=false` in `.env` (or `/arm` in Telegram) to arm it,
+   then run `start.bat` to launch it in the background.
 
 Notes:
 
-* Heroku has no free tier; a worker on the **Eco** plan ($5/mo, 1000 dyno-hours)
-  covers 24/7 (~720 h/month).
-* Heroku cycles dynos daily, wiping `/tmp`. The guard against double-buying is
-  therefore **`PM_TARGET_TOTAL`**, an absolute count read from your account
-  rather than from local state: the bot counts how many matching services you
-  already own and stops once that reaches the target. It re-checks immediately
-  before ordering too, so a restart mid-flight cannot cause a second purchase.
-  If the services list cannot be read it refuses to order rather than guess.
+* The guard against double-buying is **`PM_TARGET_TOTAL`**, an absolute count
+  read from your account rather than from local state: the bot counts how many
+  matching services you already own and stops once that reaches the target. It
+  re-checks immediately before ordering too, so a restart mid-flight cannot cause
+  a second purchase. If the services list cannot be read it refuses to order
+  rather than guess.
 * Telegram: message `@BotFather` → `/newbot`, then read your chat id from
   `https://api.telegram.org/bot<TOKEN>/getUpdates`.
 
@@ -353,14 +352,14 @@ Names are checked against `PM_USERNAME`, every other target's pool, and every bo
 the bot has already ordered. A name listed by two targets belongs to whichever is
 first in the watch list; `/watch` and `/user` reject a duplicate up front.
 
-### Keeping it alive on a laptop
+### Keeping it alive on a PC or laptop
 
-Three layers, because the first two have each already failed once:
+Three layers, because each of the first two can fail on its own:
 
 1. **Power scheme.** On mains: sleep never, hibernate never, unattended sleep
-   never, lid close does nothing. Note this laptop is a Modern Standby (S0) box,
-   and the AC sleep timeout was still 4 hours despite the Settings page saying
-   otherwise — check the *active scheme*, not the UI:
+   never, lid close does nothing. On Modern Standby (S0) laptops the AC sleep
+   timeout can differ from what the Settings page shows — check the *active
+   scheme*, not the UI:
 
    ```powershell
    powercfg /change standby-timeout-ac 0
@@ -460,8 +459,8 @@ never disagree about whether the sniper is up.
 WHMCS binds a session to the IP that created it, and cookies expire. The bot used
 to exit on that. Now it keeps watching, reports `NOT authenticated` in `/status`,
 retries every minute, and if stock appears while it is logged out it tells you
-immediately with the order link so you can buy by hand. Log in on the VPS browser
-and send `/cookie <value>` to put it back to work — no restart, no console.
+immediately with the order link so you can buy by hand. Log in again in the
+browser on the bot's machine and send `/cookie <value>` to put it back to work — no restart, no console.
 
 ### The watch list
 

@@ -392,7 +392,7 @@ def apply_cookie(pm, rt, alerts, bot, value):
         log.warning("Session cookie replaced from Telegram; authenticated.")
     else:
         rt.event("cookie rejected")
-        bot.send("That cookie does not authenticate. Log in on the VPS browser "
+        bot.send("That cookie does not authenticate. Log in with the browser on this machine "
                  "(same IP as this bot) and copy the <code>%s</code> value again."
                  % cfg.COOKIE_NAME)
 
@@ -510,8 +510,8 @@ def main():
                 now = check_session(pm, rt)
                 if was is True and now is False:
                     alerts.send("Pulsed sniper <b>LOST ITS SESSION</b>. It can still "
-                                "see stock but cannot order. Log in on the VPS "
-                                "browser and send /cookie &lt;value&gt;.",
+                                "see stock but cannot order. Log in with the browser on the bot's machine "
+                                "and send /cookie &lt;value&gt;.",
                                 event="session lost")
                 elif was is False and now is True:
                     alerts.send("Session is back.", event="session restored")

@@ -1058,7 +1058,7 @@ class TelegramBot(object):
     def cmd_cookie(self, args, msg):
         if not args:
             self.send("Usage: <code>/cookie &lt;WHMCS session value&gt;</code>\n"
-                      "Log in on the VPS browser, copy the <code>%s</code> cookie, "
+                      "Log in with the browser on the bot's machine, copy the <code>%s</code> cookie, "
                       "send it here. I delete the message afterwards."
                       % esc(self.cfg.COOKIE_NAME))
             return
@@ -1073,5 +1073,5 @@ class TelegramBot(object):
 
     def cmd_stop(self, args, msg):
         self.rt.event("stop requested from Telegram")
-        self.send("Shutting down. Start it again on the VPS with start.bat.")
+        self.send("Shutting down. Start it again on the bot's machine with start.bat.")
         self.rt.submit("stop")

@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """One-off diagnostic: what does THIS host see when it talks to Pulsed Media?
 
-Run on Heroku with:  heroku run python diag.py -a <app>
+Run on the bot's machine:  python diag.py
+The printed public IP must match the IP of the browser the cookie came from.
 Prints no secrets beyond a short cookie fingerprint.
 """
 import re

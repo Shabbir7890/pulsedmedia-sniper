@@ -1,5 +1,5 @@
 {
-  "name": "pulsed-auto-order",
+  "name": "pulsed-sniper",
   "description": "Watches a Pulsed Media WHMCS product and auto-orders it from account credit when it comes back in stock.",
   "keywords": [
     "whmcs",

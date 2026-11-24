@@ -1,4 +1,4 @@
-# Pulsed Auto Order
+# Pulsed Sniper
 
 Watches Pulsed Media products and orders them automatically from your account
 credit the moment they come back in stock. Controlled from Telegram.

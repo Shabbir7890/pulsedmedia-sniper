@@ -28,7 +28,7 @@ function Step($label, [scriptblock]$action) {
 }
 
 Write-Host ""
-Write-Host "  PULSED MEDIA SNIPER - UNINSTALL" -ForegroundColor Cyan
+Write-Host "  PULSEDMEDIA SNIPER - UNINSTALL" -ForegroundColor Cyan
 if ($DryRun) { Write-Host "  (dry run - nothing will change)" -ForegroundColor Yellow }
 Write-Host ""
 

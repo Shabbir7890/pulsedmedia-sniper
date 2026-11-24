@@ -3,7 +3,7 @@ $root = Split-Path -Parent $MyInvocation.MyCommand.Path
 Set-Location $root
 
 Write-Host ""
-Write-Host "  PULSED MEDIA SNIPER - STATUS" -ForegroundColor Cyan
+Write-Host "  PULSEDMEDIA SNIPER - STATUS" -ForegroundColor Cyan
 Write-Host "  ============================" -ForegroundColor Cyan
 Write-Host ""
 

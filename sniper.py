@@ -456,7 +456,7 @@ def main():
         pm.empty_cart()   # start from a known-empty cart so index 0 is always ours
         log.info("Authenticated.")
     else:
-        alerts.send("Pulsed sniper started but is <b>not logged in</b>. It will "
+        alerts.send("PulsedMedia Sniper started but is <b>not logged in</b>. It will "
                     "watch stock and alert you, but cannot order until you send "
                     "/cookie with a fresh session value.",
                     event="started without a session")
@@ -482,7 +482,7 @@ def main():
                         event="pid %d is %d username(s) short" % (t.pid, short))
 
     armed = "ARMED" if not cfg.DRY_RUN else "dry run"
-    alerts.send("Pulsed sniper up (%s). Watching %d target(s). /status for details."
+    alerts.send("PulsedMedia Sniper up (%s). Watching %d target(s). /status for details."
                 % (armed, len(store.active())),
                 event="sniper started (%s)" % armed)
 
@@ -509,7 +509,7 @@ def main():
                 was = rt.session_ok
                 now = check_session(pm, rt)
                 if was is True and now is False:
-                    alerts.send("Pulsed sniper <b>LOST ITS SESSION</b>. It can still "
+                    alerts.send("PulsedMedia Sniper <b>LOST ITS SESSION</b>. It can still "
                                 "see stock but cannot order. Log in with the browser on the bot's machine "
                                 "and send /cookie &lt;value&gt;.",
                                 event="session lost")
@@ -587,7 +587,7 @@ def main():
             log.warning("Cycle failed (%d in a row): %s - backing off %.0fs",
                         failures, exc, delay)
             if failures == 5:
-                alerts.send("Pulsed sniper: %d consecutive failures. Last: %s"
+                alerts.send("PulsedMedia Sniper: %d consecutive failures. Last: %s"
                             % (failures, exc))
 
         # Interruptible sleep: /check, /watch and /stop all cut it short.

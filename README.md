@@ -1,6 +1,6 @@
-# Pulsed Sniper
+# PulsedMedia Sniper
 
-[![tests](https://github.com/Shabbir7890/pulsed-sniper/actions/workflows/tests.yml/badge.svg)](https://github.com/Shabbir7890/pulsed-sniper/actions/workflows/tests.yml)
+[![tests](https://github.com/Shabbir7890/pulsedmedia-sniper/actions/workflows/tests.yml/badge.svg)](https://github.com/Shabbir7890/pulsedmedia-sniper/actions/workflows/tests.yml)
 
 Watches [Pulsed Media](https://pulsedmedia.com) seedbox products and orders them
 automatically from your account credit the moment they come back in stock.

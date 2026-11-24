@@ -1,0 +1,14 @@
+__pycache__/
+*.pyc
+.env
+*.log
+sniper.log
+sniper.err.log
+sniper.pid
+targets.json
+state.json
+session.json
+watchdog.log
+sniper.lock
+heartbeat.json
+referral.json
